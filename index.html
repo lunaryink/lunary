@@ -1,1 +1,696 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f29ab7">
+  <title>我的小站 · Pink Diary</title>
+  <style>
+    :root {
+      --bg: #fff0f5;
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --card-border: rgba(255, 182, 193, 0.4);
+      --primary: #f29ab7;
+      --primary-dark: #e07a9e;
+      --tes-orange: #ff5500;
+      --text: #4a3e43;
+      --text-muted: #8c7a82;
+      --shadow: 0 8px 32px rgba(242, 154, 183, 0.15);
+      --radius: 16px;
+    }
 
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 60px;
+      overflow-x: hidden;
+    }
+
+    /* 背景装饰光球 */
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: -1;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .orb-a { width: 350px; height: 350px; background: #ffd1dc; top: -100px; left: -100px; }
+    .orb-b { width: 400px; height: 400px; background: #e8dff5; bottom: -100px; right: -100px; }
+
+    /* 玻璃拟态卡片 */
+    .glass {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    /* 导航栏 */
+    header.nav {
+      position: sticky;
+      top: 16px;
+      margin: 16px auto;
+      max-width: 1000px;
+      width: calc(100% - 32px);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+    }
+    .brand {
+      font-weight: 800;
+      color: var(--primary-dark);
+      text-decoration: none;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+    }
+    nav a {
+      color: var(--text);
+      text-decoration: none;
+      margin-left: 18px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--primary-dark); }
+
+    main { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
+
+    /* Hero 区域 */
+    .hero {
+      margin-top: 24px;
+      padding: 40px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 32px;
+      align-items: center;
+    }
+    .pill {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(242, 154, 183, 0.2);
+      color: var(--primary-dark);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .hero-copy h1 { font-size: 2.2rem; margin-bottom: 12px; color: #332329; }
+    .hero-copy h1 span { color: var(--primary-dark); }
+    .hero-copy p { color: var(--text-muted); margin-bottom: 24px; max-width: 500px; }
+    .hero-buttons { display: flex; gap: 12px; }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn.primary { background: var(--primary); color: white; }
+    .btn.primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+    .btn.ghost { background: rgba(255, 255, 255, 0.8); color: var(--text); border: 1px solid var(--card-border); }
+    .btn.ghost:hover { background: white; color: var(--primary-dark); }
+
+    .jiaran-card {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 4px solid white;
+      box-shadow: var(--shadow);
+      display: block;
+    }
+    .jiaran-card img { width: 100%; height: 100%; object-fit: cover; }
+    .jiaran-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(242, 154, 183, 0.85);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+      text-align: center;
+      padding: 10px;
+    }
+    .jiaran-card:hover .jiaran-overlay { opacity: 1; }
+
+    /* 通用 Section */
+    .section { margin-top: 48px; }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .section-title span {
+      font-weight: 800;
+      color: var(--primary);
+      font-size: 1.2rem;
+    }
+    .section-title h2 { font-size: 1.5rem; color: #332329; }
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
+
+    /* 01 关于我 */
+    .about-card-large {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 32px;
+      padding: 32px;
+      align-items: start;
+    }
+    .about-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      border-right: 1px dashed var(--card-border);
+      padding-right: 28px;
+    }
+    .avatar-large {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffd1dc 0%, #f29ab7 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      font-weight: bold;
+      box-shadow: 0 8px 16px rgba(242, 154, 183, 0.3);
+      margin-bottom: 16px;
+    }
+    .about-left h3 { font-size: 1.3rem; color: #222; margin-bottom: 4px; }
+    .about-left p { font-size: 0.88rem; color: var(--primary-dark); font-weight: 600; margin-bottom: 16px; }
+    .status-badge {
+      background: #fff0f5;
+      border: 1px solid var(--card-border);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    .about-right { display: flex; flex-direction: column; gap: 16px; }
+    .about-bio { font-size: 1.02rem; line-height: 1.8; color: #444; }
+    .tag-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .tag-chip {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--card-border);
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+    .tes-quote-box {
+      background: linear-gradient(135deg, rgba(255,85,0,0.08), rgba(255,255,255,0.6));
+      border-left: 4px solid #ff5500;
+      padding: 12px 16px;
+      border-radius: 0 10px 10px 0;
+      font-size: 0.92rem;
+      color: #333;
+    }
+
+    /* 02 音乐 */
+    .music-layout { display: grid; gap: 20px; }
+    .now-playing { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; background: rgba(255,255,255,0.6); padding: 16px; border-radius: 12px; }
+    .album { width: 50px; height: 50px; background: var(--primary); color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+    .playlist-head { display: flex; justify-content: space-between; align-items: center; margin: 12px 0 8px; }
+    .upload-btn { background: var(--primary); color: white; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; }
+    .playlist { max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+    .track-item { padding: 8px 12px; background: rgba(255,255,255,0.5); border-radius: 8px; display: flex; justify-content: space-between; cursor: pointer; font-size: 0.9rem; }
+    .track-item:hover, .track-item.active { background: white; color: var(--primary-dark); font-weight: bold; }
+
+    /* 03 链接 */
+    .link-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .link-card { display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; text-decoration: none; color: var(--text); transition: all 0.2s; }
+    .link-card:hover { transform: translateY(-3px); background: white; }
+    .link-card span { font-size: 1.2rem; color: var(--primary-dark); }
+    .link-card b { display: block; font-size: 0.95rem; }
+    .link-card small { color: var(--text-muted); font-size: 0.8rem; }
+    .link-card i { margin-left: auto; color: var(--text-muted); font-style: normal; }
+    .link-card.laplace {
+      border-color: rgba(242, 154, 183, 0.6);
+      background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255, 240, 245, 0.9));
+    }
+
+    /* 04 LOL 俘虏 */
+    .esports-header {
+      background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255, 235, 230, 0.9));
+      border: 1px solid rgba(255, 85, 0, 0.2);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .tes-badge-container { display: flex; align-items: center; gap: 16px; }
+    .tes-logo-box {
+      width: 54px;
+      height: 54px;
+      background: #ff5500;
+      color: white;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 12px rgba(255, 85, 0, 0.3);
+    }
+    .tes-info h3 { font-size: 1.3rem; color: #1a1a1a; display: flex; align-items: center; gap: 8px; }
+    .tes-info h3 .tag { background: #ff5500; color: white; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; font-weight: normal; }
+    .tes-info p { font-size: 0.88rem; color: var(--text-muted); margin-top: 2px; }
+
+    .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .filter-chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      background: rgba(255,255,255,0.8);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-chip.active, .filter-chip:hover { background: var(--primary); color: white; border-color: var(--primary); }
+    .filter-chip.tes-chip.active { background: #ff5500; border-color: #ff5500; }
+
+    .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
+    .player-card {
+      background: rgba(255,255,255,0.85);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+    .player-card:hover { transform: translateY(-4px); box-shadow: 0 10px 24px rgba(0,0,0,0.08); background: white; }
+    .player-card.is-tes {
+      border-color: rgba(255, 85, 0, 0.3);
+      background: linear-gradient(180deg, rgba(255, 245, 240, 0.9) 0%, rgba(255, 255, 255, 0.9) 100%);
+    }
+    .player-card.is-tes::before {
+      content: "TES";
+      position: absolute;
+      top: 10px;
+      right: -20px;
+      background: #ff5500;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: bold;
+      padding: 2px 24px;
+      transform: rotate(45deg);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .player-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .player-role { font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; font-weight: 700; background: #f0f0f0; color: #555; }
+    .role-top { background: #ffebee; color: #c62828; }
+    .role-jungle { background: #e8f5e9; color: #2e7d32; }
+    .role-mid { background: #e3f2fd; color: #1565c0; }
+    .role-bot { background: #fff3e0; color: #ef6c00; }
+    .role-support { background: #f3e5f5; color: #6a1b9a; }
+
+    .player-name { font-size: 1.2rem; font-weight: 800; color: #222; margin-bottom: 2px; }
+    .player-real-name { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px; }
+    .player-meta { font-size: 0.82rem; color: #666; display: flex; flex-direction: column; gap: 4px; margin-top: auto; }
+    .player-meta span b { color: #333; }
+
+    /* 05 AI 角落 */
+    .ai-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+    .ai-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+    .ai-card:hover { transform: translateY(-3px); background: white; }
+    .ai-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ai-icon svg { width: 100%; height: 100%; }
+    .ai-info { display: flex; flex-direction: column; }
+    .ai-info strong { font-size: 1rem; color: #222; }
+    .ai-info span { font-size: 0.8rem; color: var(--text-muted); }
+    .ai-card i { margin-left: auto; color: var(--text-muted); font-style: normal; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(50, 50, 50, 0.9);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      transition: transform 0.3s;
+      z-index: 2000;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    footer { text-align: center; margin-top: 60px; color: var(--text-muted); font-size: 0.85rem; }
+
+    @media (max-width: 768px) {
+      .hero { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+      .about-card-large { grid-template-columns: 1fr; text-align: center; }
+      .about-left { border-right: none; border-bottom: 1px dashed var(--card-border); padding-right: 0; padding-bottom: 24px; }
+      header.nav { flex-direction: column; gap: 12px; }
+      nav a { margin: 0 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-orb orb-a"></div><div class="bg-orb orb-b"></div>
+
+  <header class="nav glass">
+    <a class="brand" href="#home">♡ PINK DIARY</a>
+    <nav>
+      <a href="#about">关于</a>
+      <a href="#music">音乐</a>
+      <a href="#links">链接</a>
+      <a href="#esports">LOL选手区</a>
+      <a href="#ai">AI角落</a>
+    </nav>
+  </header>
+
+  <main id="home">
+    <section class="hero glass">
+      <div class="hero-copy">
+        <span class="pill">✦ welcome to my little world</span>
+        <h1>你好，<span>这里是我的博客。</span></h1>
+        <p>一个属于自己的二次元与电竞小狗窝。记录喜欢的音乐、喜欢的vup和喜欢自转的战队。</p>
+        <div class="hero-buttons">
+          <a class="btn primary" href="#about">认识一下 →</a>
+          <a class="btn ghost" target="_blank" rel="noopener" href="https://space.bilibili.com/672328094">去看我妈 ♡</a>
+        </div>
+      </div>
+      <a class="jiaran-card" target="_blank" rel="noopener" href="https://space.bilibili.com/672328094" aria-label="打开嘉然的哔哩哔哩主页">
+        <img src="https://workers.vrp.moe/bilibili/avatar/672328094?size=480" alt="嘉然头像" referrerpolicy="no-referrer">
+        <div class="jiaran-overlay"><b>嘉然今天吃什么</b><small>点击进入 Bilibili →</small></div>
+      </a>
+    </section>
+
+    <!-- 01 关于我 -->
+    <section id="about" class="section">
+      <div class="section-title"><span>01</span><h2>关于我</h2></div>
+      <div class="card about-card-large">
+        <div class="about-left">
+          <div class="avatar-large">♡</div>
+          <h3>LUNARY / lunaryAva
+          <p>二次元 · TES的狗 忠实嘉心糖</p>
+          <div class="status-badge">☾ 太阳升起就把昨天忘掉</div>
+        </div>
+        <div class="about-right">
+          <p class="about-bio">
+            恭喜你查到我的成分！是二次元傻福、是唐氏ylg、
+        是管人痴、是撸狗、是小串子一枚喵QWQ  我已经想象到你被刀的画面了。
+          </p>
+          <div class="tes-quote-box">
+            <b>🔥 主队宣言：</b> 搏至无憾！相信小二 ！
+          </div>
+          <div class="tag-group">
+            <span class="tag-chip">🎮 英雄联盟</span>
+            <span class="tag-chip">🔥  TES</span>
+            <span class="tag-chip">💖 嘉心糖</span>
+            <span class="tag-chip">🎵 阴乐享受者</span>
+            <span class="tag-chip">✨ ACG爱好者</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 音乐播放器 -->
+    <section id="music" class="section">
+      <div class="section-title"><span>02</span><h2>音乐播放器</h2></div>
+      <div class="music-layout card">
+        <div class="now-playing">
+          <div class="album" id="albumArt">♪</div>
+          <div>
+            <span class="muted" style="font-size:0.75rem; color: var(--text-muted);">NOW PLAYING</span>
+            <h3 id="songTitle" style="font-size: 1.1rem;">还没有歌曲</h3>
+            <p id="songArtist" style="font-size: 0.85rem; color: var(--text-muted);">请从右侧添加音乐</p>
+          </div>
+          <audio id="audio" controls preload="metadata" style="margin-left: auto;"></audio>
+        </div>
+        <div class="playlist-head">
+          <b>听啥自己放QWQ</b>
+          <label class="upload-btn">＋ 添加本地音乐<input id="musicFiles" type="file" accept="audio/*" multiple hidden></label>
+        </div>
+        <div id="playlist" class="playlist"></div>
+      </div>
+    </section>
+
+    <!-- 03 我的链接 -->
+    <section id="links" class="section">
+      <div class="section-title"><span>03</span><h2>我的链接</h2></div>
+      <div class="link-grid">
+        <a class="link-card" href="mailto:lunaryava@gmail.com"><span>✉</span><div><b>邮箱</b><small>lunaryava@gmail.com</small></div><i>↗</i></a>
+        <a class="link-card" href="https://wpa.qq.com/msgrd?v=3&uin=1977612661&site=qq&menu=yes" target="_blank" rel="noopener"><span>Q</span><div><b>QQ</b><small>1977612661</small></div><i>↗</i></a>
+        <a class="link-card" href="https://twitter.com/Show1yue
+" target="_blank" rel="noopener"><span>𝕏</span><div><b>Twitter / X</b><small>Show1yue
+</small></div><i>↗</i></a>
+        <a class="link-card" href="https://www.youtube.com/lunaryAva" target="_blank" rel="noopener"><span>▶</span><div><b>YouTube</b><small>lunaryAva</small></div><i>↗</i></a>
+        <a class="link-card laplace" href="https://laplace.live/stats/672328094" target="_blank" rel="noopener"><span>✦</span><div><b>LAPLACE · 嘉然数据</b><small>直播数据 / Analytics</small></div><i>↗</i></a>
+        <a class="link-card" href="https://space.bilibili.com/471181216" target="_blank" rel="noopener"><span>🔥</span><div><b>TES 哔哩哔哩官号</b><small>Top Esports 官方主页</small></div><i>↗</i></a>
+      </div>
+    </section>
+
+    <!-- 04 LOL 电竞选手区 -->
+    <section id="esports" class="section">
+      <div class="section-title"><span>04</span><h2>LOL 电竞选手区</h2></div>
+      <div class="card">
+        <div class="esports-header">
+          <div class="tes-badge-container">
+            <div class="tes-logo-box">TES</div>
+            <div class="tes-info">
+              <h3>TOP ESPORTS <span class="tag">我的主队</span></h3>
+              <p>听见你说 请支持滔搏战队征战英雄联盟职业联赛喵</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <button class="filter-chip active" data-filter="all">全部选手</button>
+          <button class="filter-chip tes-chip" data-filter="TES">🔥 主队 TES</button>
+          <button class="filter-chip" data-filter="上单">上单 (TOP)</button>
+          <button class="filter-chip" data-filter="打野">打野 (JUG)</button>
+          <button class="filter-chip" data-filter="中单">中单 (MID)</button>
+          <button class="filter-chip" data-filter="下路">下路 (ADC)</button>
+          <button class="filter-chip" data-filter="辅助">辅助 (SUP)</button>
+        </div>
+
+        <div id="playerGrid" class="player-grid"></div>
+      </div>
+    </section>
+
+    <!-- 05 AI 角落 -->
+    <section id="ai" class="section">
+      <div class="section-title"><span>05</span><h2>AI 角落</h2></div>
+      <div class="ai-grid">
+        <a class="ai-card" href="https://chatgpt.com/" target="_blank" rel="noopener">
+          <div class="ai-icon">
+            <svg viewBox="0 0 24 24" fill="#10a37f"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9 6.0651 6.0651 0 0 0-4.8113-2.112A6.028 6.028 0 0 0 4.6033 3.011 5.979 5.979 0 0 0 1.258 6.906a6.0462 6.0462 0 0 0 .5462 7.185 5.9847 5.9847 0 0 0 .515 4.91 6.0462 6.0462 0 0 0 6.51 2.9 6.065 6.065 0 0 0 4.811 2.112 6.028 6.028 0 0 0 5.842-3.11 5.978 5.978 0 0 0 3.344-3.896 6.045 6.045 0 0 0-.5445-7.186zM12 20.373a4.512 4.512 0 0 1-2.925-1.077l.156-.09 3.633-2.098a.78.78 0 0 0 .392-.676v-5.122l1.536.887a.075.075 0 0 1 .038.06v4.22c0 2.16-1.231 3.896-2.83 3.896zm-7.935-4.218a4.473 4.473 0 0 1-.535-3.076l.162.095 3.633 2.098a.78.78 0 0 0 .782 0l4.436-2.562v1.775a.075.075 0 0 1-.038.065l-3.654 2.11c-1.87 1.08-3.898.535-4.786-1.005zm-1.252-8.81a4.51 4.51 0 0 1 2.39-2.001l-.006.18v4.197a.78.78 0 0 0 .39.676l4.436 2.562-1.536.887a.075.075 0 0 1-.076 0l-3.654-2.11c-1.87-1.08-2.682-3.235-1.944-5.391zm15.42 2.343l-4.436-2.562 1.536-.887a.075.075 0 0 1 .076 0l3.654 2.11c1.87 1.08 2.682 3.235 1.944 5.39a4.51 4.51 0 0 1-2.39 2.002l.006-.18v-4.197a.78.78 0 0 0-.39-.676zm2.025-3.21a4.473 4.473 0 0 1 .535 3.076l-.162-.095-3.633-2.098a.78.78 0 0 0-.782 0l-4.436 2.562V8.148a.075.075 0 0 1 .038-.065l3.654-2.11c1.87-1.08 3.898-.535 4.786 1.005zM12 3.627a4.512 4.512 0 0 1 2.925 1.077l-.156.09-3.633 2.098a.78.78 0 0 0-.392.676v5.122l-1.536-.887a.075.075 0 0 1-.038-.06V7.523c0-2.16 1.231-3.896 2.83-3.896z"/></svg>
+          </div>
+          <div class="ai-info"><strong>ChatGPT</strong><span>OpenAI</span></div>
+          <i>↗</i>
+        </a>
+
+        <a class="ai-card" href="https://gemini.google.com/" target="_blank" rel="noopener">
+          <div class="ai-icon">
+            <svg viewBox="0 0 24 24"><path fill="#1A73E8" d="M12 24C12 17.3726 17.3726 12 24 12C17.3726 12 12 6.62742 12 0C12 6.62742 6.62742 12 0 12C6.62742 12 12 17.3726 12 24Z"/></svg>
+          </div>
+          <div class="ai-info"><strong>Gemini</strong><span>Google</span></div>
+          <i>↗</i>
+        </a>
+
+        <a class="ai-card" href="https://chat.deepseek.com/" target="_blank" rel="noopener">
+          <div class="ai-icon">
+            <svg viewBox="0 0 24 24" fill="#4D6BFE"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
+          </div>
+          <div class="ai-info"><strong>DeepSeek</strong><span>深度求索</span></div>
+          <i>↗</i>
+        </a>
+
+        <a class="ai-card" href="https://www.kimi.ai/" target="_blank" rel="noopener">
+          <div class="ai-icon">
+            <svg viewBox="0 0 24 24" fill="#000"><path d="M12 2L2 19h20L12 2zm0 4l6.5 11h-13L12 6z"/></svg>
+          </div>
+          <div class="ai-info"><strong>Kimi</strong><span>月之暗面</span></div>
+          <i>↗</i>
+        </a>
+
+        <a class="ai-card" href="https://www.doubao.com/" target="_blank" rel="noopener">
+          <div class="ai-icon">
+            <svg viewBox="0 0 24 24" fill="#ff4757"><circle cx="12" cy="12" r="10"/><path d="M8 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm8 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-8 4s1.5 2 4 2 4-2 4-2" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+          </div>
+          <div class="ai-info"><strong>豆包</strong><span>字节跳动</span></div>
+          <i>↗</i>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer>Made with ♡ · Pink Diary · <span id="year"></span></footer>
+  <div id="toast" class="toast"></div>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // 仅保留 TES 全员、IG 的 TheShy、Rookie，以及 BLG 的 knight
+    // “招牌英雄”字段已统一更改为“个人评价”，内容留空供您自定义填充
+    const players = [
+      { id: 1, name: '369', realName: '白家浩', team: 'TES', role: '上单', comment: '还我罪神命来' },
+      { id: 2, name: 'Tian', realName: '高天亮', team: 'TES', role: '打野', comment: '叠！' },
+      { id: 3, name: 'Creme', realName: '林坚', team: 'TES', role: '中单', comment: '沟槽小奶油' },
+      { id: 4, name: 'JackeyLove', realName: '喻文波', team: 'TES', role: '下路', comment: '伟大无需多言' },
+      { id: 5, name: 'Zhuo', realName: '王旭卓', team: 'TES', role: '辅助', comment: '扫卓' },
+      { id: 6, name: 'TheShy', realName: '姜承録', team: 'IG', role: '上单', comment: '码头蒸菜' },
+      { id: 7, name: 'Rookie', realName: '宋义进', team: 'IG', role: '中单', comment: '你去干掉chovy' },
+      { id: 8, name: 'knight', realName: '卓定', team: 'BLG', role: '中单', comment: '左妈妈饶命啊' }
+    ];
+
+    let currentFilter = 'all';
+
+    const playerGrid = document.getElementById('playerGrid');
+
+    function getRoleClass(role) {
+      switch(role) {
+        case '上单': return 'role-top';
+        case '打野': return 'role-jungle';
+        case '中单': return 'role-mid';
+        case '下路': return 'role-bot';
+        case '辅助': return 'role-support';
+        default: return '';
+      }
+    }
+
+    function renderPlayers() {
+      playerGrid.innerHTML = '';
+      const filtered = players.filter(p => {
+        if (currentFilter === 'all') return true;
+        if (currentFilter === 'TES') return p.team.toUpperCase() === 'TES';
+        return p.role === currentFilter;
+      });
+
+      if (filtered.length === 0) {
+        playerGrid.innerHTML = `<p style="grid-column: 1/-1; color: var(--text-muted); text-align: center; padding: 20px;">暂无匹配的选手</p>`;
+        return;
+      }
+
+      filtered.forEach(p => {
+        const isTes = p.team.toUpperCase() === 'TES';
+        const card = document.createElement('div');
+        card.className = `player-card ${isTes ? 'is-tes' : ''}`;
+        card.title = `点击搜索 ${p.name} 集锦`;
+        
+        card.innerHTML = `
+          <div class="player-header">
+            <span class="player-role ${getRoleClass(p.role)}">${p.role}</span>
+          </div>
+          <div class="player-name">${p.name}</div>
+          <div class="player-real-name">${p.realName || '-'}</div>
+          <div class="player-meta">
+            <span>战队: <b>${p.team}</b></span>
+            <span>个人评价: <b>${p.comment || '暂无评价'}</b></span>
+          </div>
+        `;
+
+        card.addEventListener('click', () => {
+          window.open(`https://search.bilibili.com/all?keyword=${encodeURIComponent(p.name + ' 集锦')}`, '_blank');
+        });
+
+        playerGrid.appendChild(card);
+      });
+    }
+
+    document.querySelectorAll('.filter-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderPlayers();
+      });
+    });
+
+    renderPlayers();
+
+    // 音乐播放器逻辑
+    const musicFiles = document.getElementById('musicFiles');
+    const playlist = document.getElementById('playlist');
+    const audio = document.getElementById('audio');
+    const songTitle = document.getElementById('songTitle');
+    const songArtist = document.getElementById('songArtist');
+
+    let tracks = [];
+
+    musicFiles.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      files.forEach(file => {
+        const url = URL.createObjectURL(file);
+        tracks.push({ name: file.name.replace(/\.[^/.]+$/, ""), url });
+      });
+      updatePlaylist();
+      showToast(`已添加 ${files.length} 首歌曲`);
+    });
+
+    function updatePlaylist() {
+      playlist.innerHTML = '';
+      tracks.forEach((t, i) => {
+        const item = document.createElement('div');
+        item.className = 'track-item';
+        item.textContent = `${i + 1}. ${t.name}`;
+        item.addEventListener('click', () => playTrack(i));
+        playlist.appendChild(item);
+      });
+    }
+
+    function playTrack(index) {
+      if (!tracks[index]) return;
+      audio.src = tracks[index].url;
+      songTitle.textContent = tracks[index].name;
+      songArtist.textContent = '本地音乐';
+      audio.play();
+      document.querySelectorAll('.track-item').forEach((el, i) => {
+        el.classList.toggle('active', i === index);
+      });
+    }
+  </script>
+</body>
+</html>
